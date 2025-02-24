@@ -9,6 +9,12 @@
     "scripting",
     "storage"
   ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "sayoutloud.ffaddon@23.tf",
+      "strict_min_version": "60.0"
+    }
+  },
   "host_permissions": [
     "<all_urls>"
   ],
