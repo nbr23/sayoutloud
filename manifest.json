@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "SayOutLoud",
+  "version": "1.0",
+  "description": "Speak selected text",
+  "permissions": [
+    "contextMenus",
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
+  "background": {
+    "scripts": ["background.js"],
+    "type": "module"
+  },
+  "commands": {
+    "speak-selected-text": {
+      "suggested_key": {
+        "default": "Ctrl+F8",
+        "mac": "Command+F8"
+      },
+      "description": "SayOutLoud"
+    }
+  }
+}
