@@ -1,18 +1,27 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const result = await browser.storage.local.get('apiEndpoint');
-    if (result.apiEndpoint) {
-        document.getElementById('apiEndpoint').value = result.apiEndpoint;
+    const apiEndpoint = await browser.storage.local.get('apiEndpoint');
+    const apiAuthToken = await browser.storage.local.get('apiAuthToken');
+
+    if (apiEndpoint.apiEndpoint) {
+        document.getElementById('apiEndpoint').value = apiEndpoint.apiEndpoint;
+    }
+    if (apiAuthToken.apiAuthToken) {
+        document.getElementById('apiAuthToken').value = apiAuthToken.apiAuthToken;
     }
 });
 
 document.getElementById('options-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const apiEndpoint = document.getElementById('apiEndpoint').value;
+    const apiAuthToken = document.getElementById('apiAuthToken').value;
 
     try {
         new URL(apiEndpoint);
-        await browser.storage.local.set({ apiEndpoint });
+        await browser.storage.local.set({
+            apiEndpoint,
+            apiAuthToken
+        });
         const status = document.getElementById('status');
         status.textContent = 'Settings saved!';
         status.className = 'success';

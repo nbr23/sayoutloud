@@ -7,10 +7,15 @@ browser.contextMenus.create({
 async function getApiEndpoint() {
     const result = await browser.storage.local.get('apiEndpoint');
     if (!result.apiEndpoint) {
-      throw new Error('API endpoint not configured. Please configure it in the extension settings.');
+        throw new Error('API endpoint not configured. Please configure it in the extension settings.');
     }
     return result.apiEndpoint;
-  }
+}
+
+async function getApiAuthToken() {
+    const result = await browser.storage.local.get('apiAuthToken');
+    return result.apiAuthToken;
+}
 
 browser.contextMenus.onClicked.addListener((info, tab) => {
     if (info.menuItemId === "speak-selected-text" && info.selectionText) {
@@ -35,7 +40,7 @@ let audioContext;
 
 async function initAudioContext() {
     if (!audioContext) {
-      audioContext = new AudioContext();
+        audioContext = new AudioContext();
     }
     return audioContext;
 }
@@ -60,6 +65,7 @@ async function sendToAPI(text) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': await getApiAuthToken(),
             },
             body: JSON.stringify({
                 text: text
