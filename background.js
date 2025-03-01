@@ -61,12 +61,16 @@ async function playAudioBuffer(arrayBuffer) {
 
 async function sendToAPI(text) {
     try {
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+        const apiAuthToken = await getApiAuthToken();
+        if (apiAuthToken) {
+            headers['Authorization'] = apiAuthToken;
+        }
         const response = await fetch(await getApiEndpoint(), {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': await getApiAuthToken(),
-            },
+            headers,
             body: JSON.stringify({
                 text: text
             })
