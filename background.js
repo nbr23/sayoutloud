@@ -19,7 +19,7 @@ async function getApiAuthToken() {
 
 browser.contextMenus.onClicked.addListener((info, tab) => {
     if (info.menuItemId === "speak-selected-text" && info.selectionText) {
-        sendToAPI(info.selectionText);
+        sendToAPI(tab, info.selectionText);
     }
 });
 
@@ -45,21 +45,22 @@ async function initAudioContext() {
     return audioContext;
 }
 
-async function playAudioBuffer(arrayBuffer) {
+async function playAudioBuffer(tab, arrayBuffer) {
     try {
-        const context = await initAudioContext();
-        const audioBuffer = await context.decodeAudioData(arrayBuffer);
-        const source = context.createBufferSource();
-        source.buffer = audioBuffer;
-        source.connect(context.destination);
-        source.start(0);
+        const blob = new Blob([arrayBuffer], { type: 'audio/wav' });
+        const blobUrl = URL.createObjectURL(blob);
+        await browser.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: ["content.js"]
+          });
+        browser.tabs.sendMessage(tab.id, { action: "playAudio", blobUrl: blobUrl });
     } catch (error) {
         console.error('Error playing audio:', error);
         throw error;
     }
 }
 
-async function sendToAPI(text) {
+async function sendToAPI(tab, text) {
     try {
         const headers = {
             'Content-Type': 'application/json',
@@ -79,7 +80,7 @@ async function sendToAPI(text) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const arrayBuffer = await response.arrayBuffer();
-        await playAudioBuffer(arrayBuffer);
+        await playAudioBuffer(tab, arrayBuffer);
 
     } catch (error) {
         console.error('Error processing request:', error);
