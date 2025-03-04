@@ -1,11 +1,11 @@
 (function() {
     browser.runtime.onMessage.addListener((message) => {
-      if (message.action === "playAudio" && message.blobUrl) {
-        injectAudioPlayer(message.blobUrl);
+      if (message.action === "playAudio" && message.url) {
+        injectAudioPlayer(message.url);
       }
     });
     
-    function injectAudioPlayer(blobUrl) {
+    function injectAudioPlayer(url) {
       const audioPlayer = document.createElement('audio');
       audioPlayer.id = 'injected-audio-player';
       audioPlayer.controls = true;
@@ -14,7 +14,7 @@
       audioPlayer.style.right = '20px';
       audioPlayer.style.zIndex = '9999';
       
-      audioPlayer.src = blobUrl;
+      audioPlayer.src = url;
       
       document.body.appendChild(audioPlayer);
       

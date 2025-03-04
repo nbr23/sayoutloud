@@ -45,15 +45,13 @@ async function initAudioContext() {
     return audioContext;
 }
 
-async function playAudioBuffer(tab, arrayBuffer) {
+async function playAudio(tab, url) {
     try {
-        const blob = new Blob([arrayBuffer], { type: 'audio/wav' });
-        const blobUrl = URL.createObjectURL(blob);
         await browser.scripting.executeScript({
             target: { tabId: tab.id },
             files: ["content.js"]
           });
-        browser.tabs.sendMessage(tab.id, { action: "playAudio", blobUrl: blobUrl });
+        browser.tabs.sendMessage(tab.id, { action: "playAudio", url });
     } catch (error) {
         console.error('Error playing audio:', error);
         throw error;
@@ -79,8 +77,8 @@ async function sendToAPI(tab, text) {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const arrayBuffer = await response.arrayBuffer();
-        await playAudioBuffer(tab, arrayBuffer);
+        const { streamId } = await response.json();
+        await playAudio(tab, `${await getApiEndpoint()}/${streamId}`);
 
     } catch (error) {
         console.error('Error processing request:', error);
