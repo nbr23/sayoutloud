@@ -63,11 +63,12 @@ async function sendToAPI(tab, text) {
         const headers = {
             'Content-Type': 'application/json',
         };
+        const url = new URL(await getApiEndpoint());
         const apiAuthToken = await getApiAuthToken();
         if (apiAuthToken) {
             headers['Authorization'] = apiAuthToken;
         }
-        const response = await fetch(await getApiEndpoint(), {
+        const response = await fetch(url, {
             method: 'POST',
             headers,
             body: JSON.stringify({
@@ -78,7 +79,7 @@ async function sendToAPI(tab, text) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const { streamId } = await response.json();
-        await playAudio(tab, `${await getApiEndpoint()}/${streamId}`);
+        await playAudio(tab, `${url.origin + url.pathname}/${streamId}`);
 
     } catch (error) {
         console.error('Error processing request:', error);
