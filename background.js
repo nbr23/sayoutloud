@@ -17,6 +17,11 @@ async function getApiAuthToken() {
     return result.apiAuthToken;
 }
 
+async function getPlaybackSpeed() {
+    const result = await browser.storage.local.get('playbackSpeed');
+    return result.playbackSpeed || 1;
+}
+
 browser.contextMenus.onClicked.addListener((info, tab) => {
     if (info.menuItemId === "speak-selected-text" && info.selectionText) {
         sendToAPI(tab, info.selectionText);
@@ -50,8 +55,13 @@ async function playAudio(tab, url) {
         await browser.scripting.executeScript({
             target: { tabId: tab.id },
             files: ["content.js"]
-          });
-        browser.tabs.sendMessage(tab.id, { action: "playAudio", url });
+        });
+        const message = {
+            action: "playAudio",
+            url,
+            playbackSpeed: await getPlaybackSpeed()
+        };
+        browser.tabs.sendMessage(tab.id, message);
     } catch (error) {
         console.error('Error playing audio:', error);
         throw error;

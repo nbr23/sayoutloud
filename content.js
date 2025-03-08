@@ -1,7 +1,8 @@
 (function () {
     browser.runtime.onMessage.addListener((message) => {
         if (message.action === "playAudio" && message.url) {
-            injectAudioPlayer(message.url);
+            const { playbackSpeed=1 } = message;
+            injectAudioPlayer(message.url, playbackSpeed);
         }
     });
 
@@ -45,9 +46,10 @@
         return audioPlayer;
     }
 
-    function injectAudioPlayer(url) {
+    function injectAudioPlayer(url, playbackSpeed) {
         const audioPlayer = createOrGetAudioPlayer('sayoutloud-injected-audio-player');
         audioPlayer.src = url;
+        audioPlayer.playbackRate = playbackSpeed;
 
         audioPlayer.play().catch(error => {
             if (error instanceof DOMException) {
