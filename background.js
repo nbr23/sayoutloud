@@ -1,8 +1,14 @@
-browser.contextMenus.create({
-    id: "speak-selected-text",
-    title: "SayOutLoud",
-    contexts: ["selection"]
-});
+const menuIdPrefix = "sayoutloud-";
+
+async function getProfiles() {
+    const result = await browser.storage.local.get('profiles');
+    return result.profiles || [];
+}
+
+async function getProfile(name) {
+    const profiles = await getProfiles();
+    return profiles.find(profile => profile.name === name);
+}
 
 async function getApiEndpoint() {
     const result = await browser.storage.local.get('apiEndpoint');
@@ -23,20 +29,20 @@ async function getPlaybackSpeed() {
 }
 
 browser.contextMenus.onClicked.addListener((info, tab) => {
-    if (info.menuItemId === "speak-selected-text" && info.selectionText) {
-        sendToAPI(tab, info.selectionText);
+    if (info.menuItemId.startsWith(menuIdPrefix) && info.selectionText) {
+        sendToAPI(info.menuItemId.replace(menuIdPrefix, ""), tab, info.selectionText);
     }
 });
 
 browser.commands.onCommand.addListener(async (command) => {
-    if (command === "speak-selected-text") {
+    if (command.startsWith(menuIdPrefix)) {
         const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
         const [{ result }] = await browser.scripting.executeScript({
             target: { tabId: tab.id },
             func: () => window.getSelection().toString()
         });
         if (result) {
-            sendToAPI(result);
+            sendToAPI(command.replace(menuIdPrefix, ""), tab, result);
         }
     }
 });
@@ -50,7 +56,7 @@ async function initAudioContext() {
     return audioContext;
 }
 
-async function playAudio(tab, url) {
+async function playAudio(tab, url, playbackSpeed) {
     try {
         await browser.scripting.executeScript({
             target: { tabId: tab.id },
@@ -59,7 +65,7 @@ async function playAudio(tab, url) {
         const message = {
             action: "playAudio",
             url,
-            playbackSpeed: await getPlaybackSpeed()
+            playbackSpeed,
         };
         browser.tabs.sendMessage(tab.id, message);
     } catch (error) {
@@ -68,13 +74,18 @@ async function playAudio(tab, url) {
     }
 }
 
-async function sendToAPI(tab, text) {
+async function sendToAPI(profile, tab, text) {
+    const profileData = await getProfile(profile);
+    if (!profileData) {
+        console.error(`Profile not found: ${profile}`);
+        return;
+    }
     try {
         const headers = {
             'Content-Type': 'application/json',
         };
-        const url = new URL(await getApiEndpoint());
-        const apiAuthToken = await getApiAuthToken();
+        const { apiEndpoint, apiAuthToken, playbackSpeed } = profileData;
+        const url = new URL(apiEndpoint);
         if (apiAuthToken) {
             headers['Authorization'] = apiAuthToken;
         }
@@ -89,7 +100,7 @@ async function sendToAPI(tab, text) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const { streamId } = await response.json();
-        await playAudio(tab, `${url.origin + url.pathname}/${streamId}`);
+        await playAudio(tab, `${url.origin + url.pathname}/${streamId}`, playbackSpeed);
 
     } catch (error) {
         console.error('Error processing request:', error);
