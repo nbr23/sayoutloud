@@ -1,12 +1,12 @@
 (function () {
     browser.runtime.onMessage.addListener((message) => {
         if (message.action === "playAudio" && message.url) {
-            const { playbackSpeed=1 } = message;
+            const { playbackSpeed = 1 } = message;
             injectAudioPlayer(message.url, playbackSpeed);
         }
     });
 
-    function createOrGetButton(id, audioPlayer) {
+    function createOrGetPlayButton(id, audioPlayer) {
         let playButton = document.getElementById(id);
         if (!playButton) {
             playButton = document.createElement('button');
@@ -31,6 +31,44 @@
         return playButton;
     }
 
+    function createCloseButton(audioPlayerId, playButtonId) {
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'x';
+        closeButton.style.position = 'fixed';
+        closeButton.style.bottom = '45px';
+        closeButton.style.right = '15px';
+        closeButton.style.zIndex = '10000';
+        closeButton.style.padding = '4px 8px';
+        closeButton.style.backgroundColor = '#444444';
+        closeButton.style.color = 'white';
+        closeButton.style.border = 'none';
+        closeButton.style.borderRadius = '50%';
+        closeButton.style.cursor = 'pointer';
+        closeButton.style.fontSize = '12px';
+        closeButton.style.fontWeight = 'bold';
+        closeButton.style.width = '20px';
+        closeButton.style.height = '20px';
+        closeButton.style.display = 'flex';
+        closeButton.style.alignItems = 'center';
+        closeButton.style.justifyContent = 'center';
+
+        closeButton.addEventListener('click', () => {
+            const audioPlayer = document.getElementById(audioPlayerId);
+            const playButton = document.getElementById(playButtonId);
+            if (audioPlayer) {
+                audioPlayer.pause();
+                audioPlayer.remove();
+            }
+            if (playButton) {
+                playButton.remove();
+            }
+            closeButton.remove();
+        });
+
+        document.body.appendChild(closeButton);
+        return closeButton;
+    }
+
     function createOrGetAudioPlayer(id) {
         let audioPlayer = document.getElementById(id);
         if (!audioPlayer) {
@@ -47,16 +85,21 @@
     }
 
     function injectAudioPlayer(url, playbackSpeed) {
-        const audioPlayer = createOrGetAudioPlayer('sayoutloud-injected-audio-player');
+        const AUDIO_PLAYER_ID = 'sayoutloud-injected-audio-player';
+        const PLAY_BUTTON_ID = 'sayoutloud-injected-play-button';
+
+        const audioPlayer = createOrGetAudioPlayer(AUDIO_PLAYER_ID);
         audioPlayer.src = url;
         audioPlayer.playbackRate = playbackSpeed;
+
+        createCloseButton(AUDIO_PLAYER_ID, PLAY_BUTTON_ID);
 
         audioPlayer.play().catch(error => {
             if (error instanceof DOMException) {
                 return;
             }
             console.log("Autoplay prevented due to browser policy:", JSON.stringify(error));
-            createOrGetButton('sayoutloud-injected-play-button', audioPlayer);
+            createOrGetPlayButton(PLAY_BUTTON_ID, audioPlayer);
         });
     }
 })();
