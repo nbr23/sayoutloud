@@ -1,0 +1,12 @@
+{
+    "addons": {
+      "sayoutloud.ffaddon@23.tf": {
+        "updates": [
+          {
+            "version": "3.3.0",
+            "update_link": "https://github.com/nbr23/sayoutloud/releases/download/v3.3.0/sayoutloud-3.3.0.xpi"
+          }
+        ]
+      }
+    }
+  }
