@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SayOutLoud",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "description": "Speak selected text",
   "permissions": [
     "contextMenus",
@@ -28,7 +28,7 @@
     "type": "module"
   },
   "commands": {
-    "speak-selected-text": {
+    "sayoutloud-default": {
       "suggested_key": {
         "default": "Ctrl+F8",
         "mac": "Command+F8"
