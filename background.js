@@ -7,7 +7,10 @@ async function getProfiles() {
 
 async function getProfile(name) {
     const profiles = await getProfiles();
-    return profiles.find(profile => profile.name === name);
+    const profile = profiles.find(profile => profile.name === name);
+    if (!profile && profiles.length > 0) {
+        return profiles[0];
+    }
 }
 
 async function getApiEndpoint() {
