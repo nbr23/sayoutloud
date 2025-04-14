@@ -11,6 +11,7 @@ async function getProfile(name) {
     if (!profile && profiles.length > 0) {
         return profiles[0];
     }
+    return profile;
 }
 
 async function getApiEndpoint() {
